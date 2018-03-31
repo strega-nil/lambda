@@ -18,6 +18,6 @@ std::ostream& operator<<(std::ostream& os, parse_ast const& a) noexcept {
         return os << '(' << '/' << v.parameter() << '.' << v.expression()
                   << ')';
       });
-};
+}
 
 } // namespace lambda

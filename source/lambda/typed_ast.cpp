@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <limits>
 #include <optional>
 #include <vector>
 
@@ -23,7 +24,7 @@ namespace {
     auto first = crbegin(range);
     auto last = crend(range);
 
-    assert(last - first <= INT_MAX);
+    assert(last - first <= std::numeric_limits<int>::max());
 
     auto found = std::find(first, last, to_find);
     if (found == last) {

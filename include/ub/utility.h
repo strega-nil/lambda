@@ -18,9 +18,9 @@ struct visit_for {
 
 template <typename... Ts>
 struct visit_for<std::variant<Ts...>> {
-  template <typename F, typename... Ts>
-  static decltype(auto) f(F&& f, Ts&&... ts) {
-    return std::visit(std::forward<F>(f), std::forward<Ts>(ts)...);
+  template <typename F, typename... Us>
+  static decltype(auto) f(F&& f, Us&&... us) {
+    return std::visit(std::forward<F>(f), std::forward<Us>(us)...);
   }
 };
 
