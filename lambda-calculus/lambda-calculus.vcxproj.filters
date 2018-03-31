@@ -47,6 +47,12 @@
     <ClInclude Include="include\ub\utility.h">
       <Filter>Header Files\ub</Filter>
     </ClInclude>
+    <ClInclude Include="include\ub\shared_string.h">
+      <Filter>Header Files\ub</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ub\checked_iterators.h">
+      <Filter>Header Files\ub</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format">

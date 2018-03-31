@@ -40,7 +40,7 @@ namespace {
           if (auto idx = find_in_context(context, e.name())) {
             return typed_ast(typed_ast::variable(*idx));
           } else {
-            return typed_ast(typed_ast::free_variable(std::string(e.name())));
+            return typed_ast(typed_ast::free_variable(e.name()));
           }
         },
         LAM(parse_ast::call const& e) {
@@ -53,7 +53,7 @@ namespace {
           auto typed = make_typed_rec(e.expression(), context);
           context.pop_back();
           return typed_ast(
-              typed_ast::lambda(std::string(e.parameter()), std::move(typed)));
+              typed_ast::lambda(e.parameter(), std::move(typed)));
         });
   }
 
@@ -70,8 +70,8 @@ typed_ast eval(typed_ast const& ast) {
     substitute(typed_ast const& expr, typed_ast const& arg, int index) {
       return ub::match(expr)(
           LAM(typed_ast::lambda const& e) {
-            return typed_ast(
-                e.with_expression(substitute(e.expression(), arg, index + 1)));
+            return typed_ast(typed_ast::lambda(e.variable(),
+                substitute(e.expression(), arg, index + 1)));
           },
           LAM(typed_ast::call const& e) {
             return typed_ast(typed_ast::call(

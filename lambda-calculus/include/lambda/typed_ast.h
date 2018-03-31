@@ -6,6 +6,7 @@
 #include <lambda/parse_ast.h>
 
 #include <ub/utility.h>
+#include <ub/shared_string.h>
 
 #include <cassert>
 #include <exception>
@@ -49,13 +50,13 @@ inline typed_ast::typed_ast(variable e)
     : underlying_(std::make_shared<underlying_type>(std::move(e))) {}
 
 class typed_ast::free_variable {
-  std::shared_ptr<std::string const> name_;
+  ub::shared_string name_;
 
 public:
-  std::string_view name() const noexcept { return *name_; }
+  ub::shared_string name() const noexcept { return name_; }
 
-  explicit free_variable(std::string name)
-      : name_(std::make_shared<std::string const>(std::move(name))) {}
+  explicit free_variable(ub::shared_string name)
+      : name_(std::move(name)) {}
 };
 inline typed_ast::typed_ast(free_variable e)
     : underlying_(std::make_shared<underlying_type>(std::move(e))) {}
@@ -75,33 +76,27 @@ inline typed_ast::typed_ast(call e)
     : underlying_(std::make_shared<underlying_type>(std::move(e))) {}
 
 class typed_ast::lambda {
-  std::shared_ptr<std::string const> parameter_;
+  ub::shared_string parameter_;
   typed_ast expression_;
 
 public:
-  std::string_view variable() const noexcept { return *parameter_; }
+  ub::shared_string variable() const noexcept { return parameter_; }
   typed_ast const& expression() const noexcept { return expression_; }
 
-  lambda with_expression(typed_ast new_expression) const {
-    auto new_lam = *this;
-    new_lam.expression_ = std::move(new_expression);
-    return new_lam;
-  }
-
-  lambda(std::string variable, typed_ast expression)
-      : parameter_(std::make_shared<std::string const>(std::move(variable))),
+  lambda(ub::shared_string variable, typed_ast expression)
+      : parameter_(std::move(variable)),
         expression_(std::move(expression)) {}
 };
 inline typed_ast::typed_ast(lambda e)
     : underlying_(std::make_shared<underlying_type>(std::move(e))) {}
 
 class make_typed_error : public std::exception {
-  std::shared_ptr<std::string const> what_;
+  ub::shared_string what_;
 
 public:
-  make_typed_error(std::string what)
-      : what_(std::make_shared<std::string const>(std::move(what))) {}
-  virtual char const* what() const noexcept { return what_->c_str(); }
+  make_typed_error(ub::shared_string what)
+      : what_(std::move(what)) {}
+  virtual char const* what() const noexcept { return what_.c_str(); }
 };
 
 // @throw make_typed_error if the parse_ast is not well-typed
@@ -109,12 +104,12 @@ public:
 typed_ast make_typed(parse_ast const&);
 
 class eval_error : public std::exception {
-  std::shared_ptr<std::string const> what_;
+  ub::shared_string what_;
 
 public:
-  eval_error(std::string what)
-      : what_(std::make_shared<std::string const>(std::move(what))) {}
-  virtual char const* what() const noexcept { return what_->c_str(); }
+  eval_error(ub::shared_string what)
+      : what_(std::move(what)) {}
+  virtual char const* what() const noexcept { return what_.c_str(); }
 };
 
 // @throw eval_error if the typed_ast is not well-formed

@@ -1,6 +1,2 @@
-- Add an immutable shared `string` class
-  - need to replace `shared_ptr<string const>`
-  - also would work - a class that just wraps a shared_ptr<T const>,
-    and is not convertible from shared_ptr<T>
 - Switch from exceptions to monadic error handling
 - Switch to CMake
