@@ -121,15 +121,27 @@ typed_ast eval(typed_ast const& ast) {
 }
 
 std::ostream& operator<<(std::ostream& os, typed_ast const& ast) {
-  return ub::match(ast)(
-      RLAM(typed_ast::variable const& e) { return os << e.index(); },
-      RLAM(typed_ast::free_variable const& e) { return os << e.name(); },
-      RLAM(typed_ast::call const& e) {
-        return os << e.callee() << ' ' << e.argument();
-      },
-      RLAM(typed_ast::lambda const& e) {
-        return os << "(/." << e.expression() << ')';
-      });
+  struct helper {
+    static std::ostream& rec(std::ostream& os, typed_ast const& ast, std::vector<std::string_view>& ctxt) {
+      return ub::match(ast)(
+          RLAM(typed_ast::variable const& e) { return os << ctxt.at(e.index()) << '_' << e.index(); },
+          RLAM(typed_ast::free_variable const& e) { return os << e.name(); },
+          RLAM(typed_ast::call const& e) {
+            rec(os, e.callee(), ctxt);
+            os << ' ';
+            return rec(os, e.argument(), ctxt);
+          },
+          RLAM(typed_ast::lambda const& e) {
+            os << "(/" << e.variable() << '.';
+            ctxt.push_back(e.variable());
+            rec(os, e.expression(), ctxt);
+            ctxt.pop_back();
+            return os << ')';
+          });
+    }
+  };
+  std::vector<std::string_view> ctxt;
+  return helper::rec(os, ast, ctxt);
 }
 
 } // namespace lambda

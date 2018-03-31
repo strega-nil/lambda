@@ -18,7 +18,6 @@ int main() {
   };
 
   parse_ast const parse = parse_ast::call(f(), parse_ast::variable("y"));
-
   std::cout << "parse: " << parse << "\n\n";
 
   auto const pre_eval = lambda::make_typed(parse);
