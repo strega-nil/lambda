@@ -5,8 +5,8 @@
 
 #include <lambda/parse_ast.h>
 
-#include <ub/utility.h>
 #include <ub/shared_string.h>
+#include <ub/utility.h>
 
 #include <cassert>
 #include <exception>
@@ -55,8 +55,7 @@ class typed_ast::free_variable {
 public:
   ub::shared_string name() const noexcept { return name_; }
 
-  explicit free_variable(ub::shared_string name)
-      : name_(std::move(name)) {}
+  explicit free_variable(ub::shared_string name) : name_(std::move(name)) {}
 };
 inline typed_ast::typed_ast(free_variable e)
     : underlying_(std::make_shared<underlying_type>(std::move(e))) {}
@@ -84,8 +83,7 @@ public:
   typed_ast const& expression() const noexcept { return expression_; }
 
   lambda(ub::shared_string variable, typed_ast expression)
-      : parameter_(std::move(variable)),
-        expression_(std::move(expression)) {}
+      : parameter_(std::move(variable)), expression_(std::move(expression)) {}
 };
 inline typed_ast::typed_ast(lambda e)
     : underlying_(std::make_shared<underlying_type>(std::move(e))) {}
@@ -94,8 +92,7 @@ class make_typed_error : public std::exception {
   ub::shared_string what_;
 
 public:
-  make_typed_error(ub::shared_string what)
-      : what_(std::move(what)) {}
+  make_typed_error(ub::shared_string what) : what_(std::move(what)) {}
   virtual char const* what() const noexcept { return what_.c_str(); }
 };
 
@@ -107,8 +104,7 @@ class eval_error : public std::exception {
   ub::shared_string what_;
 
 public:
-  eval_error(ub::shared_string what)
-      : what_(std::move(what)) {}
+  eval_error(ub::shared_string what) : what_(std::move(what)) {}
   virtual char const* what() const noexcept { return what_.c_str(); }
 };
 

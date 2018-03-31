@@ -52,8 +52,7 @@ namespace {
           context.push_back(e.parameter());
           auto typed = make_typed_rec(e.expression(), context);
           context.pop_back();
-          return typed_ast(
-              typed_ast::lambda(e.parameter(), std::move(typed)));
+          return typed_ast(typed_ast::lambda(e.parameter(), std::move(typed)));
         });
   }
 
@@ -70,8 +69,8 @@ typed_ast eval(typed_ast const& ast) {
     substitute(typed_ast const& expr, typed_ast const& arg, int index) {
       return ub::match(expr)(
           LAM(typed_ast::lambda const& e) {
-            return typed_ast(typed_ast::lambda(e.variable(),
-                substitute(e.expression(), arg, index + 1)));
+            return typed_ast(typed_ast::lambda(
+                e.variable(), substitute(e.expression(), arg, index + 1)));
           },
           LAM(typed_ast::call const& e) {
             return typed_ast(typed_ast::call(
@@ -122,9 +121,14 @@ typed_ast eval(typed_ast const& ast) {
 
 std::ostream& operator<<(std::ostream& os, typed_ast const& ast) {
   struct helper {
-    static std::ostream& rec(std::ostream& os, typed_ast const& ast, std::vector<std::string_view>& ctxt) {
+    static std::ostream&
+    rec(std::ostream& os,
+        typed_ast const& ast,
+        std::vector<std::string_view>& ctxt) {
       return ub::match(ast)(
-          RLAM(typed_ast::variable const& e) { return os << ctxt.at(e.index()) << '_' << e.index(); },
+          RLAM(typed_ast::variable const& e) {
+            return os << ctxt.at(e.index()) << '_' << e.index();
+          },
           RLAM(typed_ast::free_variable const& e) { return os << e.name(); },
           RLAM(typed_ast::call const& e) {
             rec(os, e.callee(), ctxt);
