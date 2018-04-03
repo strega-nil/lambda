@@ -5,8 +5,8 @@
 
 #include <lambda/parse_ast.h>
 
-#include <ub/shared_string.h>
-#include <ub/utility.h>
+#include <ublib/shared_string.h>
+#include <ublib/utility.h>
 
 #include <cassert>
 #include <exception>
@@ -32,7 +32,7 @@ public:
   typed_ast(lambda e);
 
   template <typename T>
-  friend struct ::ub::visit_for;
+  friend struct ::ublib::visit_for;
 
 private:
   std::shared_ptr<underlying_type> underlying_;
@@ -50,12 +50,12 @@ inline typed_ast::typed_ast(variable e)
     : underlying_(std::make_shared<underlying_type>(std::move(e))) {}
 
 class typed_ast::free_variable {
-  ub::shared_string name_;
+  ublib::shared_string name_;
 
 public:
-  ub::shared_string name() const noexcept { return name_; }
+  ublib::shared_string name() const noexcept { return name_; }
 
-  explicit free_variable(ub::shared_string name) : name_(std::move(name)) {}
+  explicit free_variable(ublib::shared_string name) : name_(std::move(name)) {}
 };
 inline typed_ast::typed_ast(free_variable e)
     : underlying_(std::make_shared<underlying_type>(std::move(e))) {}
@@ -75,24 +75,24 @@ inline typed_ast::typed_ast(call e)
     : underlying_(std::make_shared<underlying_type>(std::move(e))) {}
 
 class typed_ast::lambda {
-  ub::shared_string parameter_;
+  ublib::shared_string parameter_;
   typed_ast expression_;
 
 public:
-  ub::shared_string variable() const noexcept { return parameter_; }
+  ublib::shared_string variable() const noexcept { return parameter_; }
   typed_ast const& expression() const noexcept { return expression_; }
 
-  lambda(ub::shared_string variable, typed_ast expression)
+  lambda(ublib::shared_string variable, typed_ast expression)
       : parameter_(std::move(variable)), expression_(std::move(expression)) {}
 };
 inline typed_ast::typed_ast(lambda e)
     : underlying_(std::make_shared<underlying_type>(std::move(e))) {}
 
 class make_typed_error : public std::exception {
-  ub::shared_string what_;
+  ublib::shared_string what_;
 
 public:
-  make_typed_error(ub::shared_string what) : what_(std::move(what)) {}
+  make_typed_error(ublib::shared_string what) : what_(std::move(what)) {}
   virtual char const* what() const noexcept { return what_.c_str(); }
 };
 
@@ -101,10 +101,10 @@ public:
 typed_ast make_typed(parse_ast const&);
 
 class eval_error : public std::exception {
-  ub::shared_string what_;
+  ublib::shared_string what_;
 
 public:
-  eval_error(ub::shared_string what) : what_(std::move(what)) {}
+  eval_error(ublib::shared_string what) : what_(std::move(what)) {}
   virtual char const* what() const noexcept { return what_.c_str(); }
 };
 
@@ -116,7 +116,7 @@ std::ostream& operator<<(std::ostream&, typed_ast const&);
 
 } // namespace lambda
 
-namespace ub {
+namespace ublib {
 
 template <>
 struct visit_for<::lambda::typed_ast> {
@@ -126,4 +126,4 @@ struct visit_for<::lambda::typed_ast> {
   }
 };
 
-} // namespace ub
+} // namespace ublib

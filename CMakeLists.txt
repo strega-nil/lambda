@@ -2,9 +2,23 @@ cmake_minimum_required(VERSION 3.6)
 
 project(lambda VERSION 0.1 LANGUAGES CXX)
 
+add_library(ublib
+  source/ublib/shared_string.cpp)
+  
+target_compile_features(ublib PUBLIC cxx_std_17)
+
+target_include_directories(ublib
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+  PRIVATE
+    source/ublib)
+
 add_library(lambda
   source/lambda/parse_ast.cpp
   source/lambda/typed_ast.cpp)
+
+target_link_libraries(lambda ublib)
 
 target_compile_features(lambda PUBLIC cxx_std_17)
 
@@ -13,12 +27,12 @@ target_include_directories(lambda
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
   PRIVATE
-    source)
+    source/lambda)
 
 add_executable(lambdac
   source/main.cpp)
 
-target_link_libraries(lambdac lambda)
+target_link_libraries(lambdac ublib lambda)
 
 if(MSVC)
   # hack to deal with cmake automatically inserting /W3; taken from llvm
@@ -44,5 +58,6 @@ function(add_options to)
   endif()
 endfunction()
 
+add_options(ublib)
 add_options(lambda)
 add_options(lambdac)

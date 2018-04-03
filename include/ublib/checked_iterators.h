@@ -2,7 +2,7 @@
 
 #include <iterator>
 
-namespace ub {
+namespace ublib {
 
 #if \
   defined(_MSC_VER) \

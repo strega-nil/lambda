@@ -1,7 +1,7 @@
 #include <lambda/typed_ast.h>
 
-#include <ub/macros.h>
-#include <ub/utility.h>
+#include <ublib/macros.h>
+#include <ublib/utility.h>
 
 #include <iostream>
 
@@ -15,14 +15,15 @@ using namespace std::literals;
 
 namespace lambda {
 
+using context_t = std::vector<std::string_view>;
+
 namespace {
-  template <typename Range, typename Ty>
-  std::optional<int> find_in_context(Range const& range, Ty const& to_find) {
+  std::optional<int> find_in_context(context_t const& ctxt, std::string_view to_find) {
     using std::crbegin;
     using std::crend;
 
-    auto first = crbegin(range);
-    auto last = crend(range);
+    auto first = crbegin(ctxt);
+    auto last = crend(ctxt);
 
     assert(last - first <= std::numeric_limits<int>::max());
 
@@ -35,8 +36,8 @@ namespace {
   }
 
   typed_ast
-  make_typed_rec(parse_ast const& ast, std::vector<std::string_view>& context) {
-    return ub::match(ast)(
+  make_typed_rec(parse_ast const& ast, context_t& context) {
+    return ublib::match(ast)(
         LAM(parse_ast::variable const& e) {
           if (auto idx = find_in_context(context, e.name())) {
             return typed_ast(typed_ast::variable(*idx));
@@ -68,7 +69,7 @@ typed_ast eval(typed_ast const& ast) {
   struct helper {
     static typed_ast
     substitute(typed_ast const& expr, typed_ast const& arg, int index) {
-      return ub::match(expr)(
+      return ublib::match(expr)(
           LAM(typed_ast::lambda const& e) {
             return typed_ast(typed_ast::lambda(
                 e.variable(), substitute(e.expression(), arg, index + 1)));
@@ -89,15 +90,15 @@ typed_ast eval(typed_ast const& ast) {
     };
 
     static typed_ast do_call(typed_ast const& callee, typed_ast const& arg) {
-      auto const arg_eval = eval(arg);
       auto const callee_eval = eval(callee);
+      auto const arg_eval = eval(arg);
 
-      return ub::match(callee_eval)(
+      return ublib::match(callee_eval)(
           LAM(typed_ast::lambda const& e) {
             return eval(substitute(e.expression(), arg_eval, 0));
           },
           LAM(typed_ast::variable const&) {
-            return ub::abort_as<typed_ast>(); // should be impossible
+            return ublib::abort_as<typed_ast>(); // should be impossible
           },
           LAM(typed_ast::call const& e) {
             return typed_ast(typed_ast::call(e, arg_eval));
@@ -108,12 +109,12 @@ typed_ast eval(typed_ast const& ast) {
     };
   };
 
-  return ub::match(ast)(
+  return ublib::match(ast)(
       LAM(typed_ast::call const& e) {
         return helper::do_call(e.callee(), e.argument());
       },
       LAM(typed_ast::variable const&) {
-        return ub::throw_as<typed_ast>(
+        return ublib::throw_as<typed_ast>(
             eval_error("evaluation found an unbound non-free variable"));
       },
       LAM(typed_ast::free_variable const& e) { return typed_ast(e); },
@@ -125,8 +126,8 @@ std::ostream& operator<<(std::ostream& os, typed_ast const& ast) {
     static std::ostream&
     rec(std::ostream& os,
         typed_ast const& ast,
-        std::vector<std::string_view>& ctxt) {
-      return ub::match(ast)(
+        context_t& ctxt) {
+      return ublib::match(ast)(
           RLAM(typed_ast::variable const& e) {
             return os << ctxt.at(e.index()) << '_' << e.index();
           },

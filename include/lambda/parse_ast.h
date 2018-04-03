@@ -7,7 +7,7 @@
 #include <utility>
 #include <variant>
 
-#include <ub/utility.h>
+#include <ublib/utility.h>
 
 namespace lambda {
 class parse_ast {
@@ -52,7 +52,7 @@ public:
   parse_ast(lambda v) : underlying_(std::move(v)) {}
 
   template <typename T>
-  friend struct ::ub::visit_for;
+  friend struct ::ublib::visit_for;
 
 private:
   std::variant<variable, call, lambda> underlying_;
@@ -62,7 +62,7 @@ std::ostream& operator<<(std::ostream&, parse_ast const&) noexcept;
 
 } // namespace lambda
 
-namespace ub {
+namespace ublib {
 
 template <>
 struct visit_for<::lambda::parse_ast> {
@@ -72,4 +72,4 @@ struct visit_for<::lambda::parse_ast> {
   }
 };
 
-} // namespace ub
+} // namespace ublib

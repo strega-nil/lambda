@@ -1,10 +1,10 @@
 ﻿#include <ostream>
 
 #include <lambda/parse_ast.h>
-#include <ub/macros.h>
-#include <ub/utility.h>
+#include <ublib/macros.h>
+#include <ublib/utility.h>
 
-using namespace ub::prelude;
+using namespace ublib::prelude;
 
 namespace lambda {
 

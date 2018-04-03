@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-namespace ub {
+namespace ublib {
 
 template <typename T>
 struct visit_for {
@@ -82,6 +82,6 @@ template <typename T, typename Exn>
 [[noreturn]] T throw_as(Exn&& exception) { throw std::forward<Exn>(exception); }
 
 namespace prelude {
-  using ::ub::match;
+  using ::ublib::match;
 }
 } // namespace ub

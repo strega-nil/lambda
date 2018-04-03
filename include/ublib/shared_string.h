@@ -3,9 +3,9 @@
 #include <memory>
 #include <string_view>
 
-#include <ub/checked_iterators.h>
+#include <ublib/checked_iterators.h>
 
-namespace ub {
+namespace ublib {
 
 // NOTE(ubsan): this string *is* a NTBS
 class shared_string {
@@ -21,16 +21,7 @@ public:
   shared_string& operator=(shared_string&&) noexcept = default;
   ~shared_string() = default;
 
-  shared_string(std::string_view s) : shared_string() {
-    if (not s.empty()) {
-      auto sz = s.size();
-      std::shared_ptr<char[]> tmp(new char[sz + 1]());
-      std::copy(
-          s.begin(), s.end(), ub::make_checked_iterator(tmp.get(), sz + 1));
-      underlying_ = std::move(tmp);
-      length_ = sz;
-    }
-  }
+  shared_string(std::string_view s);
 
   shared_string(char const* first, char const* last)
       : shared_string(std::string_view(first, last - first)) {}
@@ -88,48 +79,22 @@ public:
   friend void swap(shared_string& lhs, shared_string& rhs) noexcept;
 };
 
-inline void swap(shared_string& lhs, shared_string& rhs) noexcept {
-  using std::swap;
-  swap(lhs.underlying_, rhs.underlying_);
-  swap(lhs.length_, rhs.length_);
-}
+bool operator==(shared_string const& lhs, shared_string const& rhs) noexcept;
+bool operator!=(shared_string const& lhs, shared_string const& rhs) noexcept;
+bool operator<(shared_string const& lhs, shared_string const& rhs) noexcept;
+bool operator>(shared_string const& lhs, shared_string const& rhs) noexcept;
+bool operator<=(shared_string const& lhs, shared_string const& rhs) noexcept;
+bool operator>=(shared_string const& lhs, shared_string const& rhs) noexcept;
 
-inline bool
-operator==(shared_string const& lhs, shared_string const& rhs) noexcept {
-  return std::string_view(lhs) == std::string_view(rhs);
-}
-inline bool
-operator!=(shared_string const& lhs, shared_string const& rhs) noexcept {
-  return std::string_view(lhs) != std::string_view(rhs);
-}
-inline bool
-operator<(shared_string const& lhs, shared_string const& rhs) noexcept {
-  return std::string_view(lhs) < std::string_view(rhs);
-}
-inline bool
-operator>(shared_string const& lhs, shared_string const& rhs) noexcept {
-  return std::string_view(lhs) > std::string_view(rhs);
-}
-inline bool
-operator<=(shared_string const& lhs, shared_string const& rhs) noexcept {
-  return std::string_view(lhs) <= std::string_view(rhs);
-}
-inline bool
-operator>=(shared_string const& lhs, shared_string const& rhs) noexcept {
-  return std::string_view(lhs) >= std::string_view(rhs);
-}
+std::ostream& operator<<(std::ostream& os, shared_string const& rhs);
 
-inline std::ostream& operator<<(std::ostream& os, shared_string const& rhs) {
-  return os << std::string_view(rhs);
-}
-
-} // namespace ub
+} // namespace ublib
 
 namespace std {
 
 template <>
-struct hash<::ub::shared_string> {
-  auto operator()(::ub::shared_string const& s) {
+struct hash<::ublib::shared_string> {
+  auto operator()(::ublib::shared_string const& s) {
     return ::std::hash<::std::string_view>()(s);
   }
 };
