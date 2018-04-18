@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include <type_traits>
+#include <iostream>
+#include <variant>
 
 namespace ublib {
 
@@ -75,13 +77,7 @@ auto match(Ts&&... ts) {
   return impl::matcher<Ts...>{std::tuple<Ts&&...>(std::forward<Ts>(ts)...)};
 }
 
-template <typename T>
-[[noreturn]] T abort_as() { std::abort(); }
-
-template <typename T, typename Exn>
-[[noreturn]] T throw_as(Exn&& exception) { throw std::forward<Exn>(exception); }
-
 namespace prelude {
   using ::ublib::match;
 }
-} // namespace ub
+} // namespace ublib

@@ -1,5 +1,6 @@
 #include <lambda/typed_ast.h>
 
+#include <ublib/failure.h>
 #include <ublib/macros.h>
 #include <ublib/utility.h>
 
@@ -98,7 +99,7 @@ typed_ast eval(typed_ast const& ast) {
             return eval(substitute(e.expression(), arg_eval, 0));
           },
           LAM(typed_ast::variable const&) {
-            return ublib::abort_as<typed_ast>(); // should be impossible
+            return ublib::unreachable<typed_ast>(); // should be impossible
           },
           LAM(typed_ast::call const& e) {
             return typed_ast(typed_ast::call(e, arg_eval));

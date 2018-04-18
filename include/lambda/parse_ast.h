@@ -1,13 +1,14 @@
 ﻿#pragma once
 
+#include <ublib/shared_string.h>
+#include <ublib/utility.h>
+
 #include <iosfwd>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <variant>
-
-#include <ublib/utility.h>
 
 namespace lambda {
 class parse_ast {
@@ -59,6 +60,20 @@ private:
 };
 
 std::ostream& operator<<(std::ostream&, parse_ast const&) noexcept;
+
+
+class parse_error : public std::exception {
+  ublib::shared_string what_;
+
+public:
+  parse_error(ublib::shared_string what) : what_(std::move(what)) {}
+  virtual char const* what() const noexcept { return what_.c_str(); }
+};
+
+std::ostream& operator<<(std::ostream&, parse_error const&);
+
+// @throw parse_error if the input is invalid lambda calculus
+parse_ast parse_from(std::istream&);
 
 } // namespace lambda
 
