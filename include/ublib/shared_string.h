@@ -8,27 +8,27 @@
 namespace ublib {
 
 // NOTE(ubsan): this string *is* a NTBS
-class shared_string {
+class Shared_string {
   std::size_t length_;
   std::shared_ptr<char const[]> underlying_;
 
 public:
-  shared_string() noexcept : length_(0), underlying_(nullptr) {}
+  Shared_string() noexcept : length_(0), underlying_(nullptr) {}
 
-  shared_string(shared_string const&) noexcept = default;
-  shared_string(shared_string&&) noexcept = default;
-  shared_string& operator=(shared_string const&) noexcept = default;
-  shared_string& operator=(shared_string&&) noexcept = default;
-  ~shared_string() = default;
+  Shared_string(Shared_string const&) noexcept = default;
+  Shared_string(Shared_string&&) noexcept = default;
+  Shared_string& operator=(Shared_string const&) noexcept = default;
+  Shared_string& operator=(Shared_string&&) noexcept = default;
+  ~Shared_string() = default;
 
-  shared_string(std::string_view s);
+  Shared_string(std::string_view s);
 
-  shared_string(char const* first, char const* last)
-      : shared_string(std::string_view(first, last - first)) {}
-  shared_string(char const* ptr, std::size_t length)
-      : shared_string(std::string_view(ptr, length)) {}
-  shared_string(std::string const& s) : shared_string(std::string_view(s)) {}
-  shared_string(char const* s) : shared_string(std::string_view(s)) {}
+  Shared_string(char const* first, char const* last)
+      : Shared_string(std::string_view(first, last - first)) {}
+  Shared_string(char const* ptr, std::size_t length)
+      : Shared_string(std::string_view(ptr, length)) {}
+  Shared_string(std::string const& s) : Shared_string(std::string_view(s)) {}
+  Shared_string(char const* s) : Shared_string(std::string_view(s)) {}
 
   operator std::string_view() const noexcept {
     if (empty()) {
@@ -76,25 +76,25 @@ public:
   }
   reverse_iterator rend() const noexcept { return crend(); }
 
-  friend void swap(shared_string& lhs, shared_string& rhs) noexcept;
+  friend void swap(Shared_string& lhs, Shared_string& rhs) noexcept;
 };
 
-bool operator==(shared_string const& lhs, shared_string const& rhs) noexcept;
-bool operator!=(shared_string const& lhs, shared_string const& rhs) noexcept;
-bool operator<(shared_string const& lhs, shared_string const& rhs) noexcept;
-bool operator>(shared_string const& lhs, shared_string const& rhs) noexcept;
-bool operator<=(shared_string const& lhs, shared_string const& rhs) noexcept;
-bool operator>=(shared_string const& lhs, shared_string const& rhs) noexcept;
+bool operator==(Shared_string const& lhs, Shared_string const& rhs) noexcept;
+bool operator!=(Shared_string const& lhs, Shared_string const& rhs) noexcept;
+bool operator<(Shared_string const& lhs, Shared_string const& rhs) noexcept;
+bool operator>(Shared_string const& lhs, Shared_string const& rhs) noexcept;
+bool operator<=(Shared_string const& lhs, Shared_string const& rhs) noexcept;
+bool operator>=(Shared_string const& lhs, Shared_string const& rhs) noexcept;
 
-std::ostream& operator<<(std::ostream& os, shared_string const& rhs);
+std::ostream& operator<<(std::ostream& os, Shared_string const& rhs);
 
 } // namespace ublib
 
 namespace std {
 
 template <>
-struct hash<::ublib::shared_string> {
-  auto operator()(::ublib::shared_string const& s) {
+struct hash<::ublib::Shared_string> {
+  auto operator()(::ublib::Shared_string const& s) {
     return ::std::hash<::std::string_view>()(s);
   }
 };

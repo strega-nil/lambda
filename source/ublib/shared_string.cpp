@@ -4,7 +4,7 @@
 
 namespace ublib {
 
-shared_string::shared_string(std::string_view s) : shared_string() {
+Shared_string::Shared_string(std::string_view s) : Shared_string() {
   if (not s.empty()) {
     auto sz = s.size();
     std::shared_ptr<char[]> tmp(new char[sz + 1]());
@@ -15,32 +15,32 @@ shared_string::shared_string(std::string_view s) : shared_string() {
   }
 }
 
-void swap(shared_string& lhs, shared_string& rhs) noexcept {
+void swap(Shared_string& lhs, Shared_string& rhs) noexcept {
   using std::swap;
   swap(lhs.underlying_, rhs.underlying_);
   swap(lhs.length_, rhs.length_);
 }
 
-bool operator==(shared_string const& lhs, shared_string const& rhs) noexcept {
+bool operator==(Shared_string const& lhs, Shared_string const& rhs) noexcept {
   return std::string_view(lhs) == std::string_view(rhs);
 }
-bool operator!=(shared_string const& lhs, shared_string const& rhs) noexcept {
+bool operator!=(Shared_string const& lhs, Shared_string const& rhs) noexcept {
   return std::string_view(lhs) != std::string_view(rhs);
 }
-bool operator<(shared_string const& lhs, shared_string const& rhs) noexcept {
+bool operator<(Shared_string const& lhs, Shared_string const& rhs) noexcept {
   return std::string_view(lhs) < std::string_view(rhs);
 }
-bool operator>(shared_string const& lhs, shared_string const& rhs) noexcept {
+bool operator>(Shared_string const& lhs, Shared_string const& rhs) noexcept {
   return std::string_view(lhs) > std::string_view(rhs);
 }
-bool operator<=(shared_string const& lhs, shared_string const& rhs) noexcept {
+bool operator<=(Shared_string const& lhs, Shared_string const& rhs) noexcept {
   return std::string_view(lhs) <= std::string_view(rhs);
 }
-bool operator>=(shared_string const& lhs, shared_string const& rhs) noexcept {
+bool operator>=(Shared_string const& lhs, Shared_string const& rhs) noexcept {
   return std::string_view(lhs) >= std::string_view(rhs);
 }
 
-std::ostream& operator<<(std::ostream& os, shared_string const& rhs) {
+std::ostream& operator<<(std::ostream& os, Shared_string const& rhs) {
   return os << std::string_view(rhs);
 }
 

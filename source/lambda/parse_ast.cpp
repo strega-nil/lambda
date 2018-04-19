@@ -3,6 +3,7 @@
 #include <ublib/macros.h>
 #include <ublib/utility.h>
 
+#include <cassert>
 #include <cctype>
 #include <iostream>
 #include <optional>
@@ -12,63 +13,143 @@ using namespace ublib::prelude;
 
 namespace lambda {
 
-std::ostream& operator<<(std::ostream& os, parse_ast const& a) noexcept {
-  return match(a)(
-      RLAM(parse_ast::variable const& v) { return os << v.name(); },
-      RLAM(parse_ast::call const& v) {
+std::ostream& operator<<(std::ostream& os, Parse_ast const& ast) noexcept {
+  return match(ast)(
+      RLAM(Parse_ast::Variable const& v) { return os << v.name(); },
+      RLAM(Parse_ast::Call const& v) {
         return os << v.callee() << ' ' << v.argument();
       },
-      RLAM(parse_ast::lambda const& v) {
+      RLAM(Parse_ast::Lambda const& v) {
         return os << '(' << '/' << v.parameter() << '.' << v.expression()
                   << ')';
       });
 }
 
-namespace {
+Parse_ast parse_from(std::istream& inp) {
+  // modified from my tapl-re reason project
+  constexpr static auto eof = std::char_traits<char>::eof();
 
-  void eat_whitespace(std::istream& inp) {
-    while (std::isspace(inp.peek())) {
-      inp.get();
+  struct helper {
+    std::istream& inp;
+
+    void eat_whitespace() {
+      while (std::isspace(inp.peek())) {
+        inp.get();
+      }
     }
-  }
 
-  std::optional<parse_ast> parse_from_optional(std::istream& inp) {
-    eat_whitespace(inp);
-    if (not inp.eof()) {
+    void unexpected_thing() {
+      if (inp.peek() == eof) {
+        throw Parse_error("unexpected end of file");
+      } else {
+        throw Parse_error("unexpected character");
+      }
+    }
+
+    std::string get_var() {
+      eat_whitespace();
       auto ch = inp.get();
-      switch (ch) {
-      case '/':
-      case '\\':
-        throw parse_error("lambda expressions not yet supported");
-      case '(':
-        throw parse_error("parentheses not yet supported");
-      case ')':
-        throw parse_error("unexpected close parenthesis");
-      case '.':
-        throw parse_error("unexpected dot");
-      default:
-        if (std::isalpha(ch)) {
-          throw parse_error("variables not yet supported");
+      if (not(std::isalpha(ch) or ch == '_')) {
+        throw Parse_error("expected a variable");
+      }
+
+      std::string buffer;
+      buffer.push_back(static_cast<char>(ch));
+      for (;;) {
+        ch = inp.peek();
+        if (std::isalnum(ch) or ch == '_') {
+          inp.get();
+          buffer.push_back(static_cast<char>(ch));
         } else {
-          throw parse_error("unknown character");
+          break;
         }
       }
-    } else {
-      return std::nullopt;
+      return std::move(buffer);
     }
-  }
+
+    void get_dot() {
+      eat_whitespace();
+      if (inp.peek() == '.') {
+        inp.get();
+      } else {
+        unexpected_thing();
+      }
+    }
+
+    void get_close_paren() {
+      eat_whitespace();
+      if (inp.peek() == ')') {
+        inp.get();
+      } else {
+        unexpected_thing();
+      }
+    }
+
+    Parse_ast parse_app_list(Parse_ast fst) {
+      eat_whitespace();
+      auto ch = inp.peek();
+
+      switch (ch) {
+      case ')':
+      case eof:
+        return fst;
+      case '(': {
+        return parse_app_list(Parse_ast::Call(std::move(fst), parse_term()));
+      }
+      case '/':
+      case '\\':
+        throw Parse_error("attempted to define a lambda in a callee");
+      default:
+        if (std::isalpha(ch) or ch == '_') {
+          return parse_app_list(
+              Parse_ast::Call(std::move(fst), Parse_ast::Variable(get_var())));
+        } else {
+          unexpected_thing();
+        }
+      }
+    }
+
+    std::optional<Parse_ast> maybe_parse_term() {
+      eat_whitespace();
+      auto ch = inp.peek();
+      switch (ch) {
+      case eof:
+      case ')':
+        return std::nullopt;
+      case '/':
+      case '\\': {
+        inp.get();
+        auto name = get_var();
+        get_dot();
+        return Parse_ast::Lambda(std::move(name), parse_term());
+      }
+      case '(': {
+        inp.get();
+        auto fst = parse_term();
+        get_close_paren();
+        return parse_app_list(std::move(fst));
+      }
+      default:
+        if (std::isalpha(ch) or ch == '_') {
+          return parse_app_list(Parse_ast::Variable(get_var()));
+        } else {
+          unexpected_thing();
+        }
+      }
+    }
+
+    Parse_ast parse_term() {
+      if (auto tm = maybe_parse_term()) {
+        return std::move(*tm);
+      } else {
+        unexpected_thing();
+      }
+    }
+  };
+  return helper{inp}.parse_term();
 }
 
-
-parse_ast parse_from(std::istream& inp) {
-  if (auto ret = parse_from_optional(inp)) {
-    return std::move(*ret);
-  } else {
-    throw parse_error("no non-whitespace input");
-  }
-}
-
-std::ostream& operator<<(std::ostream& os, parse_error const& e) {
+std::ostream& operator<<(std::ostream& os, Parse_error const& e) {
   return os << "Parse error: " << e.what();
 }
 

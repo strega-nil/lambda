@@ -16,7 +16,7 @@ target_include_directories(ublib
 
 add_library(lambda
   source/lambda/parse_ast.cpp
-  source/lambda/typed_ast.cpp)
+  source/lambda/ast.cpp)
 
 target_link_libraries(lambda ublib)
 
@@ -45,7 +45,6 @@ function(add_options to)
     target_compile_options(${to}
       PRIVATE
         /W4
-        /WX
       PUBLIC
         /permissive-)
   else()
@@ -53,8 +52,7 @@ function(add_options to)
       PRIVATE
         -Wall
         -Wextra
-        -pedantic
-        -Werror)
+        -pedantic)
   endif()
 endfunction()
 
