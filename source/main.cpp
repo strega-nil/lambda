@@ -11,7 +11,12 @@
 #include <vector>
 
 constexpr static auto default_program = R"(
-(/x.x) y
+(/fix./z.
+  (/fib.fib z)
+  (fix (/f./x.x))
+)
+(/f.(/x.f (/z.x x z)) (/x.f (/z.x x z)))
+z
 )";
 
 std::unique_ptr<std::istream> get_program(int argc, char const* const* argv) {
@@ -39,7 +44,7 @@ int main(int argc, char** argv) {
   std::cout << "parse: " << parse << "\n\n";
 
   auto const pre_eval = lambda::reduce(parse);
-  std::cout << "typed: " << pre_eval << "\n\n";
+  std::cout << "typed: " << pre_eval << "\n\n";   
 
   auto const post_eval = eval(pre_eval);
   std::cout << "eval'd: " << post_eval << '\n';

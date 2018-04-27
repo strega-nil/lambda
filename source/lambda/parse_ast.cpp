@@ -1,6 +1,5 @@
 ﻿#include <lambda/parse_ast.h>
 
-#include <ublib/macros.h>
 #include <ublib/utility.h>
 
 #include <cassert>
@@ -15,11 +14,11 @@ namespace lambda {
 
 std::ostream& operator<<(std::ostream& os, Parse_ast const& ast) noexcept {
   return match(ast)(
-      RLAM(Parse_ast::Variable const& v) { return os << v.name(); },
-      RLAM(Parse_ast::Call const& v) {
+      [&](Parse_ast::Variable const& v) -> std::ostream& { return os << v.name(); },
+      [&](Parse_ast::Call const& v) -> std::ostream& {
         return os << v.callee() << ' ' << v.argument();
       },
-      RLAM(Parse_ast::Lambda const& v) {
+      [&](Parse_ast::Lambda const& v) -> std::ostream& {
         return os << '(' << '/' << v.parameter() << '.' << v.expression()
                   << ')';
       });
@@ -38,7 +37,7 @@ Parse_ast parse_from(std::istream& inp) {
       }
     }
 
-    void unexpected_thing() {
+    [[noreturn]] void unexpected_thing() {
       if (inp.peek() == eof) {
         throw Parse_error("unexpected end of file");
       } else {
@@ -46,9 +45,34 @@ Parse_ast parse_from(std::istream& inp) {
       }
     }
 
+    void comment() {
+      auto ch = inp.get();
+      for (;;) {
+        if (ch == '*' and inp.peek() == ')') {
+          inp.get();
+          return;
+        } else if (ch == '(' and inp.peek() == '*') {
+          inp.get();
+          comment();
+        } else {
+          ch = inp.get();
+          if (ch == eof) {
+            throw Parse_error("unexpected end of file");
+          }
+        }
+      }
+    }
+
     std::string get_var() {
       eat_whitespace();
       auto ch = inp.get();
+
+      if (ch == '(' and inp.peek() == '*') {
+        inp.get();
+        comment();
+        return get_var();
+      }
+
       if (not(std::isalpha(ch) or ch == '_')) {
         throw Parse_error("expected a variable");
       }
@@ -57,19 +81,26 @@ Parse_ast parse_from(std::istream& inp) {
       buffer.push_back(static_cast<char>(ch));
       for (;;) {
         ch = inp.peek();
-        if (std::isalnum(ch) or ch == '_') {
+        if (std::isalnum(ch) or ch == '_' or ch == '\'') {
           inp.get();
           buffer.push_back(static_cast<char>(ch));
         } else {
           break;
         }
       }
-      return std::move(buffer);
+      return buffer;
     }
 
     void get_dot() {
       eat_whitespace();
-      if (inp.peek() == '.') {
+	  auto ch = inp.get();
+      if (ch == '(' and inp.peek() == '*') {
+        inp.get();
+        comment();
+        return get_dot();
+      }
+
+      if (ch == '.') {
         inp.get();
       } else {
         unexpected_thing();
@@ -78,7 +109,15 @@ Parse_ast parse_from(std::istream& inp) {
 
     void get_close_paren() {
       eat_whitespace();
-      if (inp.peek() == ')') {
+	  auto ch = inp.get();
+
+      if (ch == '(' and inp.peek() == '*') {
+        inp.get();
+        comment();
+        return get_close_paren();
+      }
+
+      if (ch == ')') {
         inp.get();
       } else {
         unexpected_thing();
@@ -125,6 +164,11 @@ Parse_ast parse_from(std::istream& inp) {
       }
       case '(': {
         inp.get();
+        if (inp.peek() == '*') {
+          inp.get();
+          comment();
+          return maybe_parse_term();
+        }
         auto fst = parse_term();
         get_close_paren();
         return parse_app_list(std::move(fst));
